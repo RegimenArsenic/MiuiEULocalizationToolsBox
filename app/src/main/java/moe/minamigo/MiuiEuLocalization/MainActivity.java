@@ -2,6 +2,7 @@ package moe.minamigo.MiuiEuLocalization;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -184,14 +185,14 @@ public class MainActivity extends AppCompatActivity {
             this.appVersionNameText.setText(this.getString(R.string.mainactivity_text_check_app_version_failed));
         }
 
-        String magiskModuleVersion = SystemPropertiesProxy.get(this, "ro.miui.EULocalization");
+        String magiskModuleVersion = SystemPropertiesProxy.get(this, "ro.build.version.incremental");
         if (magiskModuleVersion == null || magiskModuleVersion.equals("")) {
             this.magiskModuleVersionText.setText(this.getString(R.string.mainactivity_text_magisk_module_not_installed));
             this.isMagiskModuleInstalled = false;
         } else {
             this.magiskModuleVersionText.setText(magiskModuleVersion);
             this.isMagiskModuleInstalled = true;
-            if (!appVersion.equals(magiskModuleVersion)) {
+            if (!magiskModuleVersion.contains(appVersion)) {
                 Toast.makeText(this, this.getString(R.string.mainactivity_toast_magisk_module_tools_not_match), Toast.LENGTH_LONG).show();
             }
         }

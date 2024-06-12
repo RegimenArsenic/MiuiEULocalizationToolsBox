@@ -1,14 +1,18 @@
 package moe.minamigo.MiuiEuLocalization;
 
+import android.widget.Toast;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import de.robv.android.xposed.XC_MethodReplacement;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import android.content.Context;
 
 public class MainModule implements IXposedHookLoadPackage {
     List<String> XSPACE_INTRODUCE_APPS = new ArrayList();
@@ -82,14 +86,18 @@ public class MainModule implements IXposedHookLoadPackage {
                 XposedBridge.hookMethod(shouldSubstituteSmallIconMethod, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                        final Class<?> classBuild = XposedHelpers.findClass("com.miui.systemui.BuildConfig", lpparam.classLoader);
-                        XposedHelpers.setStaticBooleanField(classBuild, "IS_INTERNATIONAL", true);
+                        final Class<?> classBuild = XposedHelpers.findClass("miui.os.Build", lpparam.classLoader);
+                        XposedHelpers.setStaticBooleanField(classBuild, "IS_INTERNATIONAL_BUILD", true);
+                        final Class<?> xClassBuild = XposedHelpers.findClass("miuix.os.Build", lpparam.classLoader);
+                        XposedHelpers.setStaticBooleanField(xClassBuild, "IS_INTERNATIONAL_BUILD", true);
                     }
 
                     @Override
                     protected void afterHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                        final Class<?> classBuild = XposedHelpers.findClass("com.miui.systemui.BuildConfig", lpparam.classLoader);
-                        XposedHelpers.setStaticBooleanField(classBuild, "IS_INTERNATIONAL", false);
+                        final Class<?> classBuild = XposedHelpers.findClass("miui.os.Build", lpparam.classLoader);
+                        XposedHelpers.setStaticBooleanField(classBuild, "IS_INTERNATIONAL_BUILD", false);
+                        final Class<?> xClassBuild = XposedHelpers.findClass("miuix.os.Build", lpparam.classLoader);
+                        XposedHelpers.setStaticBooleanField(xClassBuild, "IS_INTERNATIONAL_BUILD", false);
                     }
                 });
             } else{
@@ -135,7 +143,17 @@ public class MainModule implements IXposedHookLoadPackage {
 
     private void handleSecuritycore(XC_LoadPackage.LoadPackageParam lpparam) {
         handleInternational(lpparam);
-        XposedHelpers.setStaticObjectField(XposedHelpers.findClass("com.miui.xspace.constant.XSpaceApps", lpparam.classLoader), "XSPACE_INTRODUCE_APPS", this.XSPACE_INTRODUCE_APPS);
+        XposedHelpers.findAndHookMethod("miui.securityspace.XSpaceUserHandle", lpparam.classLoader, "isAppInXSpace",Context.class,String.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+                Context context=(Context)methodHookParam.args[0];
+                if(XSPACE_INTRODUCE_APPS.contains(context.getOpPackageName())){
+                    methodHookParam.setResult(true);
+                }
+            }
+
+        });
+
     }
 
     private void handleSelf(XC_LoadPackage.LoadPackageParam lpparam) {

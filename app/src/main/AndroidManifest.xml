@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.本地化工具箱">
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,7 +27,7 @@
             android:value="82" />
         <meta-data
             android:name="xposeddescription"
-            android:value="MiuiEU本地化Xposed模组" />
+            android:value="HyperOS本地化Xposed模组" />
         <meta-data
             android:name="xposedsharedprefs"
             android:value="true" />
